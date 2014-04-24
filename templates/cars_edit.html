@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block head_style %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="/script/skins/zTreeStyle.css" />
+    <link rel="stylesheet" href="/script/jscal/css/erp/erp.css" />
+    <link rel="stylesheet" type="text/css" href="/script/jscal/css/jscal2.css" />
+{% endblock %}
+
+{% block head_script %}
+    {{ block.super }}
+    <script type="text/javascript" src="/script/validation/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="/script/editor/ckeditor.js"></script>
+    <script type="text/javascript" src="/script/jscal/jscal2.js"></script>
+    <script type="text/javascript" src="/script/jscal/lang/cn.js"></script>
+    <script type="text/javascript">
+
+    </script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $("#mainform").validate({
+                errorPlacement: function(error, element) {
+                    var msg = error.text();
+                    $(element).parents('article').find('span.error').html('<label>'+msg+'</label>');
+                    //error.text().appendTo(element.parent().find('.error'));
+                },
+                success: function(element) {
+                    $(element).parents('article').find('span.error').html('');
+                },
+                rules: {
+                    car: {
+                        required: true
+                    },
+                    site:{
+                        required: true
+                    },
+                    company:{
+                        required: true
+                    },
+                    time:'required',
+                    person:'required',
+                    unit:'required',
+                    statu:'required'
+                },
+                messages: {
+                    car:{
+                        required: '请填写车牌号！'
+                    },
+                    site:{
+                        required: '请填写车辆座位数！'
+                    },
+                    company:{
+                        required: '请填写投保公司名称！'
+                    },
+                    time:{
+                        required:'请选择投保时间！'
+                    },
+                    person:{
+                        required:'请填写经办人！'
+                    },
+                    unit:{
+                        required:'请选择车辆所属机构！'
+                    },
+                    statu:{
+                        required:'请选择车辆使用状态！'
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block body_contents %}
+    <section id="editor-console">
+        <hgroup>
+            <form id= 'mainform' enctype="multipart/form-data" action="" method="post">
+                <article>
+                    <span>车牌号：</span>
+                    {{ form.car }}
+                    <span class="help">{{ form.car.help_text }}</span>
+                    <span class="error">{{ form.car.errors.as_text }}</span>
+                </article>
+                <article>
+                    <span>汽车品牌：</span>
+                    {{ form.brand }}
+                    <span class="help">{{ form.brand.help_text }}</span>
+                    <span class="error">{{ form.brand.errors.as_text }}</span>
+                </article>
+                <article>
+                    <span>座位数：</span>
+                    {{ form.site }}
+                    <span class="help">{{ form.site.help_text }}</span>
+                    <span class="error">{{ form.site.errors.as_text }}</span>
+                </article>
+                {%if instance.path != '' %}
+                    <article>
+                        <span>车辆图片 ：</span>
+                        <a href="{{ form.path.value }}">【查看】</a>
+                    </article>
+                    <article>
+                        <span>更新文件 ：</span>
+                        <input type="file" name="file" id="id_path" />
+                        <span class="help">请上传jpg文件..</span>
+                        <span class="error">{{form.path.errors.as_text}}</span>
+                    </article>
+                {% else %}
+                    <article>
+                        <span>车辆图片 ：</span>
+                        <input type="file" name="file" value="浏览">
+                        <span class="help">请上传jpg文件..</span>
+                        <span class="error">{{forms.path.errors.as_text}}</span>
+                    </article>
+                {% endif %}
+                <article>
+                    <span>保险公司：</span>
+                    {{ form.company }}
+                    <span class="help">{{ form.company.help_text }}</span>
+                    <span class="error">{{ form.company.errors.as_text }}</span>
+                </article>
+                <article>
+                    <span>投保时间：</span>
+                    {{ form.time }}
+                    <img src="/images/ico-11.gif" id="id_img_time">
+                    <script type="text/javascript">
+                        Calendar.setup({
+                            inputField    : "id_time",
+                            trigger       : "id_img_time",
+                            showTime      : 24,
+                            dateFormat    : "%Y-%m-%d",
+                            onSelect:function(){this.hide();}
+                        });
+                    </script>
+                    <span class="help">{{ form.time.help_text }}</span>
+                    <span class="error">{{ form.time.errors.as_text }}</span>
+                </article>
+                <article>
+                    <span>经办人：</span>
+                    {{ form.person }}
+                    <span class="help">{{ form.person.help_text }}</span>
+                    <span class="error">{{ form.person.errors.as_text }}</span>
+                </article>
+                <article>
+                    <span>所属机构：</span>
+                    <select name="unit" id="unit">
+                        <option value="">===请选择机构===</option>
+                        {% for unit in units %}
+                            <option value="{{unit.id}}" {% if unitid == unit.id %} selected {% endif %}>{{unit.name}}</option>
+                        {% endfor %}
+                    </select>
+                    <span class="help"></span>
+                    <span class="error"></span>
+                </article>
+                <article>
+                    <span>使用状态：</span>
+                    {{ form.statu }}
+                    <span class="help">{{ form.statu.help_text }}</span>
+                    <span class="error">{{ form.statu.errors.as_text }}</span>
+                </article>
+                <article style="padding-left: 150px">
+                    <input type="submit" class="button"   value="修改"  />
+                </article>
+            </form>
+        </hgroup>
+    </section>
+{% endblock %}

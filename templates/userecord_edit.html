@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+
+{% block head_style %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="/script/jscal/css/jscal2.css" />
+{% endblock %}
+
+{% block head_script %}
+    {{ block.super }}
+    <script type="text/javascript" src="/script/validation/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="/script/jscal/jscal2.js"></script>
+    <script type="text/javascript" src="/script/jscal/lang/cn.js"></script>
+    <script type="text/javascript">
+
+    </script>
+    <script type="text/javascript">
+    function strtotimestamp(datestr)
+      {
+          var new_str = datestr.replace(/:/g,"-");
+          new_str = new_str.replace(/ /g,"-");
+          var arr = new_str.split("-");
+          var datum = new Date(Date.UTC(arr[0],arr[1]-1,arr[2],arr[3],arr[4],arr[5]));
+
+          return (datum.getTime()/1000);  //为PHP所用
+       }
+        $(document).ready(function(){
+
+            $("#depart").change(function(){
+                var staffid = $('#user');
+                staffid.empty();
+                staffid.append('<option value="">请选择员工</option>');
+                var selectDepart=$(this).val();
+                if(selectDepart=='') return;
+                $.post("/hr/personlist/", { "deid": selectDepart, 'main':1 },function(data){
+                    $.each(data,function(id,option){
+                        var s = parseInt('{{ form.user.value}}');
+                        var res = '';
+                        if(s == option.id){
+                            res = 'selected';
+                        }
+                        var html = '<option value="'+ option.id +'" '+res+'>' + option.realname + '</option>';
+                        staffid.append(html);
+                    });
+                }, "json");
+            }).change();
+
+            if('{{ form.user.value}}'=='None'||'{{ form.user.value}}'=='')
+            {
+                //用户申请
+                $('#id_stime').attr("readonly","readonly");
+                $('#id_ltime').attr("disabled","disabled");
+                $('#id_mileage').attr("disabled","disabled");
+                $('#id_oilwear').attr("disabled","disabled");
+               // $('#id_stime').val(new date());
+                $('#ltime').hide();
+
+                 $("#mainform").validate({
+                    errorPlacement: function(error, element) {
+                        var msg = error.text();
+                        $(element).parents('article').find('span.error').html('<label>'+msg+'</label>');
+                        //error.text().appendTo(element.parent().find('.error'));
+                    },
+                    success: function(element) {
+                        $(element).parents('article').find('span.error').html('');
+                    },
+                    rules: {
+                        depart:'required',
+                        user:'required',
+                        car:'required',
+                        stime:'required',
+                        //ltime:'required',
+                        use:'required'
+                        //mileage:'required',
+                        //oilwear:'required'
+                    },
+                    messages: {
+                        depart:{
+                            required: '请选择申请部门！'
+                        },
+                        user:{
+                            required: '请选择申请人！'
+                        },
+                        car:{
+                            required: '请选择借用的车辆！'
+                        },
+                        stime:{
+                            required:'请选择借用时间！'
+                        },
+                       // ltime:{
+                       //     required:'请选择归还时间！'
+                       // },
+                        use:{
+                            required:'请填写用途！'
+                        }
+                       // mileage:{
+                       //     required:'请填写里程数！'
+                      //  },
+                      //  oilwear:{
+                     //       required:'请填写油耗数！'
+                     //   }
+                    }
+                });
+
+
+            }
+            else
+            {
+                //修改
+                $('#stime').hide();
+                $('#id_stime').attr("disabled","disabled");
+                $('#id_ltime').attr("readonly","readonly");
+                $('#depart').attr("disabled","disabled");
+                $('#user').attr("disabled","disabled");
+                $('#car').attr("disabled","disabled");
+                $('#id_use').attr("disabled","disabled");
+
+
+                 $("#mainform").validate({
+                    errorPlacement: function(error, element) {
+                        var msg = error.text();
+                        $(element).parents('article').find('span.error').html('<label>'+msg+'</label>');
+                        //error.text().appendTo(element.parent().find('.error'));
+                    },
+                    success: function(element) {
+                        $(element).parents('article').find('span.error').html('');
+                    },
+                    rules: {
+                        ltime:{required:true},
+                        mileage:{required:true,number:true},
+                        oilwear:{required:true,number:true}
+                    },
+                    messages: {
+                        ltime:{
+                            required:'请选择归还时间！'
+                        },
+                        mileage:{
+                            required:'请填写里程数！',
+                            number:'请输入数字'
+                        },
+                        oilwear:{
+                            required:'请填写油耗数！',
+                            number:'请输入数字'
+                        }
+                    }
+                });
+
+            }
+
+
+        });
+    </script>
+{% endblock %}
+
+{% block body_contents %}
+    <section id="editor-console">
+        <hgroup>
+            <form id= 'mainform' enctype="multipart/form-data" action="" method="POST">
+                <article id="allp">
+                    <span>申请借用：</span>
+                    <select name="depart" id="depart">
+                        <option value="">请选择部门</option>
+                        {% for d in departs %}
+                            <option value="{{ d.id }}" {% if form.depart.value == d.id %} selected {% endif %}>{{ d.dep_list_name|safe }}
+                            </option>
+                        {% endfor %}
+                    </select>&nbsp;
+                    <select name="user" id="user">
+                        <option value="">请选择员工</option>
+                    </select>
+                    <span class="help">{{ field.help_text }}</span>
+                    <span class="error">{{ field.errors.as_text }}</span>
+                </article>
+                <article>
+                    <span>借用车辆：</span>
+                    <select name="car" id="car">
+                        <option value="">请选择要借用的车辆</option>
+                        {% for c in cars %}
+                            <option value="{{c.id}}" {% if form.car.value == c.id %} selected {% endif %}>{{c.car}}</option>
+                        {% endfor %}
+                    </select>
+                    <span class="help"></span>
+                    <span class="error"></span>
+                </article>
+                <article>
+                    <span>借用时间：</span>
+                    {{ form.stime }}
+                    <img src="/images/ico-11.gif" id="stime">
+                    <script type="text/javascript">
+                        Calendar.setup({
+                            inputField    : "id_stime",
+                            trigger       : "stime",
+                            showTime      : 24,
+                            min            :new Date(),
+
+                            dateFormat    : "%Y-%m-%d %H:%M:%S",
+                            onSelect:function(){this.hide();}
+                        });
+                    </script>
+                    <span class="help">{{ form.stime.help_text }}</span>
+                    <span class="error">{{ form.stime.errors.as_text }}</span>
+                </article>
+                <article>
+                    <span>归还时间：</span>
+                    {{ form.ltime }}
+                    <img src="/images/ico-11.gif" id="ltime">
+                    <script type="text/javascript">
+                        Calendar.setup({
+                            inputField    : "id_ltime",
+                            trigger       : "ltime",
+                            showTime      : 24,
+                            min            :new Date(),
+                            onTimeChange  : function(cal) {
+                            var ss=strtotimestamp($("#id_stime").val());
+                            var hh=strtotimestamp($("#id_ltime").val());
+                            if(ss>hh) $("#id_ltime").val('');
+
+                            },
+                            dateFormat    : "%Y-%m-%d %H:%M:%S",
+                            onSelect:function(){this.hide();}
+                        });
+                    </script>
+                    <span class="help">{{ form.ltime.help_text }}</span>
+                    <span class="error">{{ form.ltime.errors.as_text }}</span>
+                </article>
+                <article>
+                    <span>用途：</span>
+                    {{ form.use }}
+                    <span class="help">{{ form.use.help_text }}</span>
+                    <span class="error">{{ form.use.errors.as_text }}</span>
+                </article>
+                <article>
+                    <span>里程：</span>
+                    {{ form.mileage }}km
+                    <span class="help">{{ form.mileage.help_text }}</span>
+                    <span class="error">{{ form.mileage.errors.as_text }}</span>
+                </article>
+                <article>
+                    <span>油耗：</span>
+                    {{ form.oilwear }}L
+                    <span class="help">{{ form.oilwear.help_text }}</span>
+                    <span class="error">{{ form.oilwear.errors.as_text }}</span>
+                </article>
+                <article>
+                    <span>备注：</span>
+                    {{ form.remarks }}
+                    <span class="help">{{ form.remarks.help_text }}</span>
+                    <span class="error">{{ form.remarks.errors.as_text }}</span>
+                </article>
+                <article style="padding-left: 150px">
+                    <input type="submit" class="button"   value="保存"  />
+                </article>
+            </form>
+        </hgroup>
+    </section>
+{% endblock %}

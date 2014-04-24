@@ -1,0 +1,18 @@
+<hgroup>
+    <h3>提示:</h3>
+    <form action="/office/cars/dele?method=delete" method="post">
+        <p>您正要删除以下内容: </p>
+        {% for c in cars %}
+            <ul>
+                <li><input type="checkbox" name="id" id="{{c.id}}" value="{{c.id}}" checked />
+                    <label for="{{c.id}}">名称:[{{c.car}}]的资源?</label></li>
+            </ul>
+        {% endfor %}
+        <p>您确定要执行此操作么？</p>
+        <article>
+            <span></span>
+            <input type="submit" class="submit" value="确定" />
+            <input type="button" class="submit" value="取消" id="close" />
+        </article>
+    </form>
+</hgroup>

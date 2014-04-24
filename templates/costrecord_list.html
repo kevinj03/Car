@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block body_header_fixed %} class="fixed"{% endblock %}
+{% block head_style %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="/script/skins/ui1007s.css"/>
+    <link rel="stylesheet" type="text/css" href="/script/jscal/css/jscal2.css" />
+{% endblock%}
+
+{% block head_script %}
+    {{ block.super }}
+    <script type="text/javascript" src="/script/jscal/jscal2.js"></script>
+    <script type="text/javascript" src="/script/jscal/lang/cn.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $("#keytype").change(function(){
+                var keytype = $(this).val();
+                var keyword = $('#keyword');
+                keyword.empty();
+                keyword.append('<option value="">请选择</option>');
+                if(keytype == 1){
+                    $.post("/office/cars/sel", { "keytype":$(this).val() },function(data){
+                        $.each(data,function(id,option){
+                            html = '<option value="'+ option.id +'">' + '['+option.uname+']'+option.name + '</option>';
+                            keyword.append(html);
+                        });
+                    }, "json");
+                }
+                else{
+                    $.post("/office/cars/sel", { "keytype":$(this).val() },function(data){
+                        $.each(data,function(id,option){
+                            var s = {{ cars.id }}
+                                    html = '<option value="'+ option.id +'"';
+                            if (option.id == s) {
+                                html += ' selected';
+                            }
+                            html += '>' + option.name + '</option>';
+                            keyword.append(html);
+                        });
+                    }, "json");
+                }
+            }).change();
+        });
+    </script>
+{% endblock %}
+
+{% block body_search %}
+    <section id="serach-console">
+        <hgroup>
+            <form action="?method=search" method="get">
+                搜索
+                <select name="keytype" id="keytype">
+                    <option value="1"{% if search.keytype == "1" %} selected="selected" {%endif%}>部门</option>
+                    <option value="2"{% if search.keytype == "2" %} selected="selected" {%endif%}>车辆</option>
+                </select>
+                为
+                <select name="keyword" id="keyword">
+                    <option value="">全部</option>
+                </select>
+                <input class="button" type="submit" value="搜索" />
+            </form>
+        </hgroup>
+    </section>
+{% endblock %}
+
+{% block body_contents %}
+    <section id="editor-console">
+        {% load pagination_tags %}
+        <table class="data-list" width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <th width="2%"><input type="checkbox" id="check-console" value="-1"></th>
+                <th width="10%">车辆</th>
+                <th width="10%">服务类型</th>
+                <th width="10%">费用</th>
+                <th width="10%">时间</th>
+                <th width="10%">经办人</th>
+                <th width="10%">备注</th>
+            </tr>
+            {% if querys %}
+                {% autopaginate querys 30 %}
+                {% for q in querys %}
+                    <tr>
+                        <td><input type="checkbox" name="id" id="{{q.id}}" value="{{ q.id }}"></td>
+                        <td align="center">{{q.car.car}}</td>
+                        <td align="center">{{q.get_stype_display}}</td>
+                        <td align="center">{{q.cost}}</td>
+                        <td align="center">{{q.stime|date:'Y-m-d H:i'}}</td>
+                        <td align="center">{{q.user}}</td>
+                        <td align="center">{{q.remarks}}</td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="10" style="color:#e00">空记录！</td>
+                </tr>
+            {% endif %}
+        </table>
+        <div >{% paginate %}</div>
+        <br/>
+    </section>
+{% endblock %}

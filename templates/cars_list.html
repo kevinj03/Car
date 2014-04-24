@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block body_header_fixed %} class="fixed"{% endblock %}
+{% block head_style %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="/script/skins/ui1007s.css"/>
+    <link rel="stylesheet" type="text/css" href="/script/jscal/css/jscal2.css" />
+{% endblock%}
+
+{% block head_script %}
+    {{ block.super }}
+    <script type="text/javascript" src="/script/jscal/jscal2.js"></script>
+    <script type="text/javascript" src="/script/jscal/lang/cn.js"></script>
+{% endblock %}
+
+{% block body_search %}
+    <section id="serach-console">
+        <hgroup>
+            <form action="?method=search" method="get">
+                搜索
+                <select name="keytype" id="keytype">
+                    <option value="1"{% if search.keytype == "1" %} selected="selected" {%endif%}>车牌号</option>
+                    <option value="2"{% if search.keytype == "2" %} selected="selected" {%endif%}>品牌</option>
+                    <option value="3"{% if search.keytype == "3" %} selected="selected" {%endif%}>座位数</option>
+                </select>
+                中包含
+                <input name="keyword" type="text" value = "{{serach.keyword}}" />
+                使用状态为{{ search.s }}
+                <select name="statu" >
+                    <option value="" {% if search.statu == '' %} selected="selected" {%endif%}>全部</option>
+                    <option value="0" {% if search.statu == '0' %} selected="selected" {%endif%}>空闲中</option>
+                    <option value="1" {% if search.statu == '1' %} selected="selected" {%endif%}>使用中</option>
+                </select>
+
+                <input class="button" type="submit" value="搜索" />
+            </form>
+
+        </hgroup>
+    </section>
+{% endblock %}
+
+{% block body_contents %}
+    <section id="editor-console">
+        {% load pagination_tags %}
+        <table class="data-list" width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <th width="2%"><input type="checkbox" id="check-console" value="-1"></th>
+                <th width="10%">车牌号</th>
+                <th width="10%">品牌</th>
+                <th width="10%">座位数</th>
+                <th width="10%">图片</th>
+                <th width="10%">保险公司</th>
+                <th width="10%">投保时间</th>
+                <th width="10%">经办人</th>
+                <th width="10%">使用状态</th>
+            </tr>
+            {% if querys %}
+                {% autopaginate querys 30 %}
+                {% for q in querys %}
+                    <tr>
+                        <td><input type="checkbox" name="id" id="{{q.id}}" value="{{ q.id }}"></td>
+                        <td align="center">{{q.car}}</td>
+                        <td align="center">{{q.brand}}</td>
+                        <td align="center">{{q.site}}</td>
+                        <td align="center">
+                            {% if q.path != '' %}
+                                <a href="{{ q.path }}" target="_blank"><img src="{{ q.path }}" width="40px" height="30px"></a>
+                            {% endif %}
+                        </td>
+                        <td align="center">{{q.company}}</td>
+                        <td align="center">{{q.time|date:'Y-m-d'}}</td>
+                        <td align="center">{{q.person}}</td>
+                        <td align="center">{{q.get_statu_display}}</td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="9" style="color:#e00">空记录！</td>
+                </tr>
+            {% endif %}
+        </table>
+        <div >{% paginate %}</div>
+        <br/>
+    </section>
+{% endblock %}
